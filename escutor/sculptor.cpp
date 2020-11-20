@@ -5,15 +5,14 @@
 
 using namespace std;
 
-//chamada do construtor e criação do objeto
+// chamada do construtor e criação do objeto
 Sculptor::Sculptor(int _nx, int _ny, int _nz)
 {
     nx = _nx;
     ny = _ny;
     nz = _nz;
-// tratamento de execeções
 
-// Criação da Matriz3d
+// Criação da Matriz3d via alocação dinamica
     v = new Voxel **[nx];
     for(int i = 0; i < nx; i++)
     {
@@ -40,7 +39,7 @@ Sculptor::Sculptor(int _nx, int _ny, int _nz)
     }
 }
 
-//chamada do destrutor
+// chamada do destrutor da classe
 Sculptor::~Sculptor()
 {
 
@@ -57,16 +56,16 @@ Sculptor::~Sculptor()
     }
      delete [] v;
 }
-//Recebe cores e opacidade da figura
+// Recebe cores e opacidade da figura e valida se as cores respeitam ou não os intervalos de cada propriedade
 void Sculptor::setColor(float r, float g, float b, float alpha)
 {
-    if (r>1 || g>1 || b>1 || alpha>1)
+    if (r > 1 || g > 1 || b > 1 || alpha > 1)
     {
-        cout<<"Um dos valores é maior que o permitido"<< endl;
+        cout << "Um dos valores é maior que o permitido" << endl;
     }
-    else if(r<0 || g<0 || b<0 || alpha<0)
+    else if(r < 0 || g < 0 || b < 0 || alpha < 0)
     {
-        cout<<"Um dos valores é menor que o permitido"<< endl;
+        cout << "Um dos valores é menor que o permitido" << endl;
     }
     else
     {
@@ -76,7 +75,7 @@ void Sculptor::setColor(float r, float g, float b, float alpha)
         a = alpha;
     }
 }
-
+// Método que atribui as propriedades r, g, b e alpha a posição da matriz
 void Sculptor::putVoxel(int x, int y, int z)
 {
          v[x][y][z].r = r;
@@ -85,12 +84,12 @@ void Sculptor::putVoxel(int x, int y, int z)
          v[x][y][z].a = a;
          v[x][y][z].isOn = true;
 }
-
+// Método que desativa a propriedade responsável pela visibilidade do voxel
 void Sculptor::cutVoxel(int x, int y, int z)
 {
         v[x][y][z].isOn = false;
 }
-
+// Método que constroi blocos retangulares
 void Sculptor::putBox(int x0, int x1, int y0, int y1, int z0, int z1)
 { 
     for(int i = x0; i < x1; i++)
@@ -104,7 +103,7 @@ void Sculptor::putBox(int x0, int x1, int y0, int y1, int z0, int z1)
         }
     }
 }
-
+// Método que desativa a visibilidade dos cubos que formam o bloco construido através do método putbox
 void Sculptor::cutBox(int x0, int x1, int y0, int y1, int z0, int z1)
 {
     for(int i = x0; i < x1; i++)
@@ -118,15 +117,14 @@ void Sculptor::cutBox(int x0, int x1, int y0, int y1, int z0, int z1)
         }
     }
 }
-
+/* Método responsável por construir uma esfera. A ideia é que as estruturas de repetição percorrão toda a matriz de forma a verificar
+ * quais dos pontos que a compõe, fazem parte da esfera cuja as coordenadas são previamente definidas na chamada do método.
+ */
 void Sculptor::putSphere(int xcenter, int ycenter, int zcenter, int radius)
 {
     double distancia = 0;
 
-/* Subtrai-se o raio da coordenada central para que o laço comece a percorrer desde os menores valores possiveis para x,y e z até os maiores possíveis. Pois
- * caso essa opreação de subtração não seja feita, ira ser considerada apenas metade da esfera.
- */
-        for(int i = 0; i < nx; i++)
+    for(int i = 0; i < nx; i++)
            {
                for(int j= 0; j < ny; j++)
                {
@@ -141,41 +139,19 @@ void Sculptor::putSphere(int xcenter, int ycenter, int zcenter, int radius)
                    }
                }
            }
-        /*
-        // IMPRESÃO DA MATRIZ
-           for (int i = 0; i < nx; i++)
-           {
-               for (int j = 0; j < ny; j++)
-               {
-                   for (int k = 0; k < nz; k++)
-                   {
-                     cout << v[i][j][k].r << " ";
-                    //cout << v[i][j][k].g << " ";
-                     //cout << v[i][j][k].b << " ";
-                    // cout << v[i][j][k].a << " ";
-                    // cout << v[i][j][k].isOn << " ";
-                   }
-                   cout<<endl;
-               }
-               cout<<endl;
-           }
-           */
-}
 
+}
+// Método que desativa a visibilidade dos cubos que compõe a esfera, que foi construida por meio do método putSphere
 void Sculptor::cutSphere(int xcenter, int ycenter, int zcenter, int radius)
 {
     double distancia = 0;
-    float cordX = 0, cordY = 0, cordZ = 0;
 
-    cordX = xcenter + radius;
-    cordY = ycenter + radius;
-    cordZ = zcenter + radius;
 
-    for(int i = xcenter - radius; i < cordX; i++)
+    for(int i = 0; i < nx; i++)
        {
-           for(int j= ycenter - radius; j < cordY; j++)
+           for(int j= 0; j < ny; j++)
            {
-               for(int k = zcenter - radius; k < cordZ; k++)
+               for(int k = 0; k < nz; k++)
                {
                    distancia = sqrt(pow(i - xcenter,2) + pow(j - ycenter,2) + pow(k - zcenter,2));
                    if (distancia <= radius)
@@ -188,10 +164,10 @@ void Sculptor::cutSphere(int xcenter, int ycenter, int zcenter, int radius)
        }
 
 }
-
-/* Implementação da elpisoide:
- * intervalos das estruturas de repetição possuem o mesmo critério do método da esfera.
-*/
+/* Método responsável por construir uma elipsoide. A ideia é a mesma do método putSphere entretanto, deve-se atentar a subtração dos
+ * valores i, j e k no codigo, pelas coordenadas dos centros da elipsoide obtidas na chamada do método. Essa operação assegura a
+ * obtenção das coordenadas dos eixos x, y e z.
+ */
 void Sculptor::putEllipsoid(int xcenter, int ycenter, int zcenter, int rx, int ry, int rz)
 {
     double auxiliar = 0;
@@ -213,7 +189,7 @@ void Sculptor::putEllipsoid(int xcenter, int ycenter, int zcenter, int rx, int r
            }
        }
 }
-
+// Método que desativa a visibilidade dos blocos que compõe a elipsoide, que foi construida por meio do método putEllipsoid
 void Sculptor::cutEllipsoid(int xcenter, int ycenter, int zcenter, int rx, int ry, int rz)
 {
     double auxiliar = 0;
@@ -235,17 +211,17 @@ void Sculptor::cutEllipsoid(int xcenter, int ycenter, int zcenter, int rx, int r
            }
        }
 }
-
+// Método que escreve as coordenadas das figuras obtidas através dos métodos anteriores em um arquivo .OFF
 void Sculptor::writeOFF(char *filename)
-{   // 8 6 0
+{   // um cubo possui 8 vetices e 6 faces
     int NVertices = 0, Nfaces = 0, NArestas = 0, ContVoxel = 0;
     ofstream fout;
 
     fout.open(filename);
     fout<< "OFF" <<endl;
  /*
-  * As estruturas de repetição varrem a matriz em busca dos elementos que estão com a propri. isOn=true. Isso
-  * indica a presença de um cubo, permitindo assim contabilizar o total de cubos que compõem a figura.
+  * As estruturas de repetição varrem a matriz em busca dos elementos que estão com a propriedade isOn=true. Isso indica a presença de um
+  *  cubo, permitindo assim contabilizar o total de cubos que compõem a figura.
   */
     for(int i = 0; i < nx; i++)
     {
@@ -263,7 +239,7 @@ void Sculptor::writeOFF(char *filename)
     Nfaces = ContVoxel * 6; // Retorna a qtd. total de faces presentes na figura.
     fout<< NVertices<< " " << " " << Nfaces << " " << NArestas << endl;
 
-
+// Adiciona ao arquivo as coordenadas dos pontos de todos os elementos que possuem a propriedade de visibilidade isOn = true.
     for(int k=0; k<nz; k++)
     {
              for(int j=0; j<ny; j++)
@@ -285,8 +261,9 @@ void Sculptor::writeOFF(char *filename)
              }
 
          }
-
-
+/* Adiciona ao arquivo a sequencia de pontos que formam a face de cada cubo que compõe a imagem. Alem disso, adiciona a propriedade de
+ * cores e da opacidade de cada uma das faces.
+*/
      int nf = 0;
           for(int k=0;k<nz; k++){
                for(int j=0;j<ny;j++){

@@ -11,6 +11,7 @@ int main(void)
     trono.putBox(0,9,0,9,0,9);
     trono.cutBox(1,8,1,9,1,9);
     trono.writeOFF((char*)"trono.off");
+
     // metodo elipsoide
     Sculptor el(31,31,51);
     el.setColor(0,1,0,1);
